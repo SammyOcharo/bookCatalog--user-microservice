@@ -10,14 +10,21 @@ public class RequestDAO {
     private String secondName;
     private String email;
     private String role;
+    private String password;
 
     public RequestDAO() {
     }
 
-    public RequestDAO(String firstName, String secondName, String email, String role) {
+    public RequestDAO(
+            String firstName,
+            String secondName,
+            String email,
+            String password,
+            String role) {
         this.firstName = firstName;
         this.secondName = secondName;
         this.email = email;
+        this.password = password;
         this.role = role;
     }
 
@@ -51,5 +58,13 @@ public class RequestDAO {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }
