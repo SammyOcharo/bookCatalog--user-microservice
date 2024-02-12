@@ -24,6 +24,8 @@ public class UserServiceImpl implements UserService {
             user.setFirstName(requestDAO.getFirstName());
             user.setSecondName(requestDAO.getSecondName());
             user.setRole(requestDAO.getRole());
+            //todo remember to encrypt the password before saving.
+            user.setPassword(requestDAO.getPassword());
 
             userRepository.save(user);
             return new ResponseEntity<>("User created successfully", HttpStatus.CREATED);
