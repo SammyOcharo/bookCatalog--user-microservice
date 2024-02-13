@@ -7,4 +7,6 @@ import org.springframework.stereotype.Service;
 @Service
 public interface UserService {
     ResponseEntity<String> userRegister(RequestDAO requestDAO);
+
+    ResponseEntity<String> forgetPassword(RequestDAO requestDAO);
 }

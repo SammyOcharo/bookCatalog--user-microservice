@@ -33,4 +33,9 @@ public class UserServiceImpl implements UserService {
             throw e;
         }
     }
+
+    @Override
+    public ResponseEntity<String> forgetPassword(RequestDAO requestDAO) {
+        return null;
+    }
 }
