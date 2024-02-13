@@ -36,6 +36,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ResponseEntity<String> forgetPassword(RequestDAO requestDAO) {
-        return null;
+        //todo write logic for mail to be sent to the user's email
+        return ResponseEntity.ok("otp sent to mail");
     }
 }
