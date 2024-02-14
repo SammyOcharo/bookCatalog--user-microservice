@@ -39,4 +39,14 @@ public class UserServiceImpl implements UserService {
         //todo write logic for mail to be sent to the user's email
         return ResponseEntity.ok("otp sent to mail");
     }
+
+    @Override
+    public ResponseEntity<String> userLogin(RequestDAO requestDAO) {
+        try{
+            //todo login logic
+            return new ResponseEntity<>("Login successful", HttpStatus.OK);
+        } catch (Exception e){
+            throw e;
+        }
+    }
 }

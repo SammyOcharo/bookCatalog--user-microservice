@@ -27,4 +27,11 @@ public class UserController {
     public ResponseEntity<String> forgetPassword(@RequestBody RequestDAO requestDAO){
         return userService.forgetPassword(requestDAO);
     }
+
+    @PostMapping("user-login/")
+    public ResponseEntity<String> userLogin(@RequestBody RequestDAO requestDAO){
+        return userService.userLogin(requestDAO);
+    }
+
+
 }
