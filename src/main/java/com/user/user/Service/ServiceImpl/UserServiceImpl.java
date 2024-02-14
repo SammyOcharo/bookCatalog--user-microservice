@@ -2,6 +2,7 @@ package com.user.user.Service.ServiceImpl;
 
 import com.user.user.DAO.RequestDAO;
 import com.user.user.Entity.User;
+import com.user.user.Exception.UserDoesNotExistException;
 import com.user.user.Repository.UserRepository;
 import com.user.user.Service.UserService;
 import org.springframework.http.HttpStatus;
@@ -29,6 +30,8 @@ public class UserServiceImpl implements UserService {
 
             userRepository.save(user);
             return new ResponseEntity<>("User created successfully", HttpStatus.CREATED);
+        }catch (UserDoesNotExistException e){
+            throw  e;
         }catch (Exception e){
             throw e;
         }
