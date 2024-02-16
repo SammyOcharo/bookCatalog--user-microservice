@@ -19,6 +19,7 @@ public class UserServiceImpl implements UserService {
     }
     @Override
     public ResponseEntity<String> userRegister(RequestDAO requestDAO) {
+        //create entity instance
         User user = new User();
         try{
             //set user details
