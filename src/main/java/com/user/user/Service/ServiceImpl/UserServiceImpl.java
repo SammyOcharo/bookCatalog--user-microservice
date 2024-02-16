@@ -21,6 +21,7 @@ public class UserServiceImpl implements UserService {
     public ResponseEntity<String> userRegister(RequestDAO requestDAO) {
         User user = new User();
         try{
+            //set user details
             user.setEmail(requestDAO.getEmail());
             user.setFirstName(requestDAO.getFirstName());
             user.setSecondName(requestDAO.getSecondName());
