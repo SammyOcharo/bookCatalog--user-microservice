@@ -12,6 +12,12 @@ public class RequestDAO {
     private String role;
     private String password;
 
+    private String token;
+    private Integer statusCode;
+
+    private String responseMessage;
+
+
     public RequestDAO() {
     }
 
@@ -19,13 +25,43 @@ public class RequestDAO {
             String firstName,
             String secondName,
             String email,
+            String role,
             String password,
-            String role) {
+            String token,
+            Integer statusCode,
+            String responseMessage) {
         this.firstName = firstName;
         this.secondName = secondName;
         this.email = email;
-        this.password = password;
         this.role = role;
+        this.password = password;
+        this.token = token;
+        this.statusCode = statusCode;
+        this.responseMessage = responseMessage;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public Integer getStatusCode() {
+        return statusCode;
+    }
+
+    public void setStatusCode(Integer statusCode) {
+        this.statusCode = statusCode;
+    }
+
+    public String getResponseMessage() {
+        return responseMessage;
+    }
+
+    public void setResponseMessage(String responseMessage) {
+        this.responseMessage = responseMessage;
     }
 
     public String getFirstName() {

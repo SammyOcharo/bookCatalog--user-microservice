@@ -29,7 +29,7 @@ public class UserController {
     }
 
     @PostMapping("user-login/")
-    public ResponseEntity<String> userLogin(@RequestBody RequestDAO requestDAO){
+    public ResponseEntity<RequestDAO> userLogin(@RequestBody RequestDAO requestDAO){
         return userService.userLogin(requestDAO);
     }
 
