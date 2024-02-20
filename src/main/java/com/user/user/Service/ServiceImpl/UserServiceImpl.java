@@ -3,6 +3,7 @@ package com.user.user.Service.ServiceImpl;
 import com.user.user.DAO.RequestDAO;
 import com.user.user.Entity.User;
 import com.user.user.Exception.UserDoesNotExistException;
+import com.user.user.Exception.UserExistsException;
 import com.user.user.Repository.UserRepository;
 import com.user.user.Service.UserService;
 import org.springframework.http.HttpStatus;
@@ -34,6 +35,9 @@ public class UserServiceImpl implements UserService {
     }
     @Override
     public ResponseEntity<String> userRegister(RequestDAO requestDAO) {
+        if(userRepository.existsByEmail(requestDAO.getEmail())){
+            return new ResponseEntity<>("User with email "+ requestDAO.getEmail() + " exists", HttpStatus.BAD_REQUEST);
+        }
         //create entity instance
         User user = new User();
         try{
@@ -65,15 +69,11 @@ public class UserServiceImpl implements UserService {
         RequestDAO requestDAO1 = new RequestDAO();
         System.out.println("we are here");
 //        try {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        requestDAO.getEmail(),
-                        requestDAO.getPassword()
-                )
-        );
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(requestDAO.getEmail(),requestDAO.getPassword()));
         System.out.println("we are here");
         User user = userRepository.findByEmail(requestDAO.getEmail()).orElseThrow();
         String token = jwtService.generateToken(user);
+               
 
        requestDAO1.setToken(token);
        requestDAO1.setStatusCode(200);
