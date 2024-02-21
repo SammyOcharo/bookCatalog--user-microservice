@@ -68,6 +68,9 @@ public class UserServiceImpl implements UserService {
     public ResponseEntity<RequestDAO> userLogin(RequestDAO requestDAO) {
         RequestDAO requestDAO1 = new RequestDAO();
         System.out.println("we are here");
+        System.out.println(requestDAO.getEmail());
+        System.out.println(requestDAO.getPassword());
+
 //        try {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(requestDAO.getEmail(),requestDAO.getPassword()));
         System.out.println("we are here");
