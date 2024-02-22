@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Random;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -69,8 +70,25 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ResponseEntity<String> forgetPassword(RequestDAO requestDAO) {
+        if(!userRepository.existsByEmail(requestDAO.getEmail())){
+            return new ResponseEntity<>("user with email provided does not exist", HttpStatus.NOT_FOUND);
+        }
+
+        ForgotPasswordOtp forgotPasswordOtp = new ForgotPasswordOtp();
+
         //todo write logic for mail to be sent to the user's email
-        return ResponseEntity.ok("otp sent to mail");
+        Random random = new Random();
+        Integer otp = random.nextInt(9000) + 1000;
+
+
+        forgotPasswordOtp.setEmail(requestDAO.getEmail());
+        forgotPasswordOtp.setOtp(otp);
+
+        forgotPasswordOtpRepository.save(forgotPasswordOtp);
+
+
+        return ResponseEntity.ok("otp sent to mail " + otp);
+
     }
 
     @Override
@@ -118,9 +136,13 @@ public class UserServiceImpl implements UserService {
 
             Integer otp = forgotPasswordOtp.getOtp();
 
-            return (!Objects.equals(otp, requestDAO.getOtp())) ?
-                 new ResponseEntity<>("Otp does not Match", HttpStatus.BAD_REQUEST):
-                    new ResponseEntity<>("Otp Match", HttpStatus.OK);
+            if (!Objects.equals(otp, requestDAO.getOtp())) {
+                return new ResponseEntity<>("Otp does not Match", HttpStatus.BAD_REQUEST);
+            }else {
+                forgotPasswordOtp.setVerified(Boolean.TRUE);
+                forgotPasswordOtpRepository.save(forgotPasswordOtp);
+                return new ResponseEntity<>("Otp Verified.", HttpStatus.OK);
+            }
 
         }catch (Exception e){
             throw e;
@@ -129,12 +151,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ResponseEntity<String> changePassword(RequestDAO requestDAO) {
-        if(userRepository.existsByEmail(requestDAO.getEmail())){
+        if(!userRepository.existsByEmail(requestDAO.getEmail())){
             return new ResponseEntity<>("User with email "+ requestDAO.getEmail() + " exists", HttpStatus.BAD_REQUEST);
         }
         try{
             User user = userRepository.findByEmail(requestDAO.getEmail()).orElseThrow();
             user.setPassword(encoder.encode(requestDAO.getPassword()));
+
+            userRepository.save(user);
 
             return new ResponseEntity<>("Password set successfully", HttpStatus.OK);
         }catch (Exception e){
