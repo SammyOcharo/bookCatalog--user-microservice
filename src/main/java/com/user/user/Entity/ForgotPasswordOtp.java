@@ -13,18 +13,17 @@ public class ForgotPasswordOtp {
     private Long id;
     private String email;
     private Integer otp;
+    private boolean isVerified=false;
 
 
     public ForgotPasswordOtp() {
     }
 
-    public ForgotPasswordOtp(
-            Long id,
-            String email,
-            Integer otp) {
+    public ForgotPasswordOtp(Long id, String email, Integer otp, boolean isVerified) {
         this.id = id;
         this.email = email;
         this.otp = otp;
+        this.isVerified = isVerified;
     }
 
     public Long getId() {
@@ -33,6 +32,14 @@ public class ForgotPasswordOtp {
 
     public String getEmail() {
         return email;
+    }
+
+    public boolean isVerified() {
+        return isVerified;
+    }
+
+    public void setVerified(boolean verified) {
+        isVerified = verified;
     }
 
     public Integer getOtp() {

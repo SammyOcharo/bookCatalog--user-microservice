@@ -33,12 +33,13 @@ public class UserController {
         return userService.userLogin(requestDAO);
     }
 
-    @PostMapping("user-forget-password/confirm-otp")
+    @PostMapping("user-forget-password/confirm-otp/")
     public ResponseEntity<String> confirmOtp(@RequestBody RequestDAO requestDAO){
 
         return userService.confirmOtp(requestDAO);
     }
 
+    @PostMapping("user-forget-password/change-password/")
     public ResponseEntity<String> changePassword(@RequestBody RequestDAO requestDAO){
 
         return userService.changePassword(requestDAO);
