@@ -94,5 +94,12 @@ public class UserServiceImpl implements UserService {
 
     }
 
+    @Override
+    public ResponseEntity<String> confirmOtp(RequestDAO requestDAO) {
+
+
+        return null;
+    }
+
 
 }
