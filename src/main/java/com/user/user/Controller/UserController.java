@@ -33,5 +33,9 @@ public class UserController {
         return userService.userLogin(requestDAO);
     }
 
+    public ResponseEntity<String> confirmOtp(@RequestBody RequestDAO requestDAO){
+
+        return userService.confirmOtp(requestDAO);
+    }
 
 }

@@ -11,4 +11,6 @@ public interface UserService {
     ResponseEntity<String> forgetPassword(RequestDAO requestDAO);
 
     ResponseEntity<RequestDAO> userLogin(RequestDAO requestDAO);
+
+    ResponseEntity<String> confirmOtp(RequestDAO requestDAO);
 }

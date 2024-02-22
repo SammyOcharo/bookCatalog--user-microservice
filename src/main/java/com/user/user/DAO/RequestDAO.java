@@ -17,6 +17,8 @@ public class RequestDAO {
 
     private String responseMessage;
 
+    private Integer otp;
+
 
     public RequestDAO() {
     }
@@ -29,7 +31,8 @@ public class RequestDAO {
             String password,
             String token,
             Integer statusCode,
-            String responseMessage) {
+            String responseMessage,
+            Integer otp) {
         this.firstName = firstName;
         this.secondName = secondName;
         this.email = email;
@@ -38,6 +41,15 @@ public class RequestDAO {
         this.token = token;
         this.statusCode = statusCode;
         this.responseMessage = responseMessage;
+        this.otp = otp;
+    }
+
+    public Integer getOtp() {
+        return otp;
+    }
+
+    public void setOtp(Integer otp) {
+        this.otp = otp;
     }
 
     public String getToken() {
