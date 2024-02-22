@@ -1,9 +1,11 @@
 package com.user.user.Service.ServiceImpl;
 
 import com.user.user.DAO.RequestDAO;
+import com.user.user.Entity.ForgotPasswordOtp;
 import com.user.user.Entity.User;
 import com.user.user.Exception.UserDoesNotExistException;
 import com.user.user.Exception.UserExistsException;
+import com.user.user.Repository.ForgotPasswordOtpRepository;
 import com.user.user.Repository.UserRepository;
 import com.user.user.Service.UserService;
 import org.springframework.http.HttpStatus;
@@ -13,10 +15,15 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
+import java.util.Optional;
+
 @Service
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+
+    private final ForgotPasswordOtpRepository forgotPasswordOtpRepository;
 
     private final PasswordEncoder encoder;
 
@@ -26,9 +33,11 @@ public class UserServiceImpl implements UserService {
 
     public UserServiceImpl(
             UserRepository userRepository,
+            ForgotPasswordOtpRepository forgotPasswordOtpRepository,
             PasswordEncoder encoder,
             AuthenticationManager authenticationManager, JWTService jwtService){
         this.userRepository = userRepository;
+        this.forgotPasswordOtpRepository = forgotPasswordOtpRepository;
         this.encoder = encoder;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
@@ -96,10 +105,40 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ResponseEntity<String> confirmOtp(RequestDAO requestDAO) {
+        if(!forgotPasswordOtpRepository.existsByEmail(requestDAO.getEmail())){
+            return new ResponseEntity<>("email does not exist", HttpStatus.NOT_FOUND);
+        }
 
+        try{
+            ForgotPasswordOtp forgotPasswordOtp = forgotPasswordOtpRepository
+                    .findByEmail(requestDAO.getEmail())
+                    .stream()
+                    .reduce((first, second)-> second)
+                    .orElseThrow();
 
-        return null;
+            Integer otp = forgotPasswordOtp.getOtp();
+
+            return (!Objects.equals(otp, requestDAO.getOtp())) ?
+                 new ResponseEntity<>("Otp does not Match", HttpStatus.BAD_REQUEST):
+                    new ResponseEntity<>("Otp Match", HttpStatus.OK);
+
+        }catch (Exception e){
+            throw e;
+        }
     }
 
+    @Override
+    public ResponseEntity<String> changePassword(RequestDAO requestDAO) {
+        if(userRepository.existsByEmail(requestDAO.getEmail())){
+            return new ResponseEntity<>("User with email "+ requestDAO.getEmail() + " exists", HttpStatus.BAD_REQUEST);
+        }
+        try{
+            User user = userRepository.findByEmail(requestDAO.getEmail()).orElseThrow();
+            user.setPassword(encoder.encode(requestDAO.getPassword()));
 
+            return new ResponseEntity<>("Password set successfully", HttpStatus.OK);
+        }catch (Exception e){
+            throw  e;
+        }
+    }
 }
