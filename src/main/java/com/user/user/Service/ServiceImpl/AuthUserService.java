@@ -1,6 +1,4 @@
 package com.user.user.Service.ServiceImpl;
-
-import com.user.user.Entity.User;
 import com.user.user.Repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -8,6 +6,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
+@SuppressWarnings("unused")
 public class AuthUserService implements UserDetailsService {
 
     private final UserRepository userRepository;

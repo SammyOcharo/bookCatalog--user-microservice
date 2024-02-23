@@ -4,7 +4,6 @@ import com.user.user.DAO.RequestDAO;
 import com.user.user.Entity.ForgotPasswordOtp;
 import com.user.user.Entity.User;
 import com.user.user.Exception.UserDoesNotExistException;
-import com.user.user.Exception.UserExistsException;
 import com.user.user.Repository.ForgotPasswordOtpRepository;
 import com.user.user.Repository.UserRepository;
 import com.user.user.Service.UserService;
@@ -16,13 +15,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Random;
 
 @Service
+@SuppressWarnings("unused")
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+
+    private final EmailService emailService;
 
     private final ForgotPasswordOtpRepository forgotPasswordOtpRepository;
 
@@ -33,11 +34,13 @@ public class UserServiceImpl implements UserService {
     private final JWTService jwtService;
 
     public UserServiceImpl(
-            UserRepository userRepository,
+            UserRepository userRepository, EmailService emailService,
             ForgotPasswordOtpRepository forgotPasswordOtpRepository,
             PasswordEncoder encoder,
-            AuthenticationManager authenticationManager, JWTService jwtService){
+            AuthenticationManager authenticationManager,
+            JWTService jwtService){
         this.userRepository = userRepository;
+        this.emailService = emailService;
         this.forgotPasswordOtpRepository = forgotPasswordOtpRepository;
         this.encoder = encoder;
         this.authenticationManager = authenticationManager;
@@ -61,10 +64,8 @@ public class UserServiceImpl implements UserService {
 
             userRepository.save(user);
             return new ResponseEntity<>("User created successfully", HttpStatus.CREATED);
-        }catch (UserDoesNotExistException e){
-            throw  e;
-        }catch (Exception e){
-            throw e;
+        } catch (Exception e){
+            return new ResponseEntity<>("An error has occurred", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -86,8 +87,13 @@ public class UserServiceImpl implements UserService {
 
         forgotPasswordOtpRepository.save(forgotPasswordOtp);
 
+        String subject = "Forgot password OTP";
+        String body = "Use this otp " + otp + " to reset your password";
 
-        return ResponseEntity.ok("otp sent to mail " + otp);
+        emailService.sendEmail(requestDAO.getEmail(), subject,  body);
+
+
+        return ResponseEntity.ok("otp sent to mail" );
 
     }
 
@@ -129,12 +135,11 @@ public class UserServiceImpl implements UserService {
 
         try{
             ForgotPasswordOtp forgotPasswordOtp = forgotPasswordOtpRepository
-                    .findByEmail(requestDAO.getEmail())
-                    .stream()
-                    .reduce((first, second)-> second)
+                    .findByEmailAndIsVerifiedFalse(requestDAO.getEmail())
                     .orElseThrow();
 
             Integer otp = forgotPasswordOtp.getOtp();
+
 
             if (!Objects.equals(otp, requestDAO.getOtp())) {
                 return new ResponseEntity<>("Otp does not Match", HttpStatus.BAD_REQUEST);
@@ -145,12 +150,16 @@ public class UserServiceImpl implements UserService {
             }
 
         }catch (Exception e){
-            throw e;
+            return new ResponseEntity<>("An error has occurred", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @Override
     public ResponseEntity<String> changePassword(RequestDAO requestDAO) {
+
+        if(requestDAO.getEmail() == null || requestDAO.getPassword()==null){
+            return new ResponseEntity<>("Email/password field is null", HttpStatus.BAD_REQUEST);
+        }
         if(!userRepository.existsByEmail(requestDAO.getEmail())){
             return new ResponseEntity<>("User with email "+ requestDAO.getEmail() + " exists", HttpStatus.BAD_REQUEST);
         }
@@ -162,7 +171,7 @@ public class UserServiceImpl implements UserService {
 
             return new ResponseEntity<>("Password set successfully", HttpStatus.OK);
         }catch (Exception e){
-            throw  e;
+            return new ResponseEntity<>("An error has occurred", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }
