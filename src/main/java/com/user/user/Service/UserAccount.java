@@ -5,5 +5,5 @@ import com.user.user.Entity.User;
 import org.springframework.http.ResponseEntity;
 
 public interface UserAccount {
-    ResponseEntity<RequestDAO> userAcoountDetails(Long id);
+    ResponseEntity<RequestDAO> userAccountDetails(Long id);
 }
