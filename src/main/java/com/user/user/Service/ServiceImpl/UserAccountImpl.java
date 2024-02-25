@@ -10,17 +10,18 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
-public class UserAcountImpl implements UserAccount {
+@SuppressWarnings("unused")
+public class UserAccountImpl implements UserAccount {
 
     private final UserRepository userRepository;
 
-    public UserAcountImpl(UserRepository userRepository) {
+    public UserAccountImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
 
     @Override
-    public ResponseEntity<RequestDAO> userAcoountDetails(Long id) {
+    public ResponseEntity<RequestDAO> userAccountDetails(Long id) {
 
         RequestDAO requestDAO = new RequestDAO();
 

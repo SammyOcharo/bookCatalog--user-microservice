@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@SuppressWarnings("unused")
 @RequestMapping("/apps/api/v1/auth/")
 public class UserController {
-
     private final UserService userService;
 
     public UserController(UserService userService){
