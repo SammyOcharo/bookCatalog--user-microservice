@@ -22,22 +22,20 @@ public class User implements UserDetails {
     private String email;
     private String role;
     private String password;
+    private boolean activated=false;
+
 
     public User() {
     }
 
-    public User(Long id,
-                String firstName,
-                String secondName,
-                String email,
-                String password,
-                String role) {
+    public User(Long id, String firstName, String secondName, String email, String role, String password, boolean activated) {
         Id = id;
         this.firstName = firstName;
         this.secondName = secondName;
         this.email = email;
-        this.password = password;
         this.role = role;
+        this.password = password;
+        this.activated = activated;
     }
 
     public Long getId() {
@@ -97,21 +95,25 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return false;
+        return activated;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isEnabled() {
-        return false;
+        return activated;
+    }
+
+    public void setActivated(boolean activated) {
+        this.activated = activated;
     }
 }

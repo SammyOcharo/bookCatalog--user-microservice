@@ -16,7 +16,7 @@ import java.util.function.Function;
 @SuppressWarnings("unused")
 public class JWTService {
 
-    public final String secret = "jihbfiaubiybequeyvufqyobdhoyfeyqbfuoebfyyeboqubefbubreuiqboerygqybog";
+    public final String secret = "sdfbsdfbdifuwbeifuebfiuwbfuifehf983y3h2r98rh29uebjcsydbyubef";
 
 
     public String generateToken(User user){

@@ -2,9 +2,11 @@ package com.user.user.Service.ServiceImpl;
 
 import com.user.user.DAO.RequestDAO;
 import com.user.user.Entity.ForgotPasswordOtp;
+import com.user.user.Entity.LoginOtp;
 import com.user.user.Entity.User;
-import com.user.user.Exception.UserDoesNotExistException;
+import com.user.user.Exception.OtpNotFoundException;
 import com.user.user.Repository.ForgotPasswordOtpRepository;
+import com.user.user.Repository.LoginOtpRepository;
 import com.user.user.Repository.UserRepository;
 import com.user.user.Service.UserService;
 import org.springframework.http.HttpStatus;
@@ -14,6 +16,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Random;
 
@@ -32,19 +35,21 @@ public class UserServiceImpl implements UserService {
     private final AuthenticationManager authenticationManager;
 
     private final JWTService jwtService;
+    private final LoginOtpRepository loginOtpRepository;
 
     public UserServiceImpl(
             UserRepository userRepository, EmailService emailService,
             ForgotPasswordOtpRepository forgotPasswordOtpRepository,
             PasswordEncoder encoder,
             AuthenticationManager authenticationManager,
-            JWTService jwtService){
+            JWTService jwtService, LoginOtpRepository loginOtpRepository){
         this.userRepository = userRepository;
         this.emailService = emailService;
         this.forgotPasswordOtpRepository = forgotPasswordOtpRepository;
         this.encoder = encoder;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
+        this.loginOtpRepository = loginOtpRepository;
     }
     @Override
     public ResponseEntity<String> userRegister(RequestDAO requestDAO) {
@@ -53,6 +58,7 @@ public class UserServiceImpl implements UserService {
         }
         //create entity instance
         User user = new User();
+        LoginOtp loginOtp = new LoginOtp();
         try{
             //set user details
             user.setEmail(requestDAO.getEmail());
@@ -63,7 +69,22 @@ public class UserServiceImpl implements UserService {
             user.setPassword(encoder.encode(requestDAO.getPassword()));
 
             userRepository.save(user);
-            return new ResponseEntity<>("User created successfully", HttpStatus.CREATED);
+
+            //todo write logic for mail to be sent to the user's email
+            Random random = new Random();
+            Integer otp = random.nextInt(9000) + 1000;
+
+
+            loginOtp.setEmail(requestDAO.getEmail());
+            loginOtp.setOtp(otp);
+
+            loginOtpRepository.save(loginOtp);
+
+            String subject = "Activate account OTP";
+            String body = "Use this otp " + otp + " to activate your account";
+
+            emailService.sendEmail(requestDAO.getEmail(), subject,  body);
+            return new ResponseEntity<>("User created successfully, check email for account activation code", HttpStatus.CREATED);
         } catch (Exception e){
             return new ResponseEntity<>("An error has occurred", HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -97,33 +118,95 @@ public class UserServiceImpl implements UserService {
 
     }
 
+
+    @Override
+    public ResponseEntity<RequestDAO> activateAccount(RequestDAO requestDAO) {
+
+        RequestDAO requestDAO1 = new RequestDAO();
+        try{
+            if(!userRepository.existsByEmail(requestDAO.getEmail())){
+
+                requestDAO1.setResponseMessage("Email does not exist!");
+                requestDAO1.setStatusCode(404);
+
+                return new ResponseEntity<>(requestDAO1, HttpStatus.NOT_FOUND);
+            }
+
+            Integer otp = requestDAO.getOtp();
+            if(otp == null){
+                requestDAO1.setResponseMessage("Invalid otp!");
+                requestDAO1.setStatusCode(400);
+            }
+            LoginOtp loginOtp = loginOtpRepository
+                    .findByEmailAndIsVerifiedFalse(requestDAO.getEmail())
+                    .orElseThrow(NoSuchElementException::new);
+
+            Integer savedOtp = loginOtp.getOtp();
+            if(!Objects.equals(savedOtp, otp)){
+                requestDAO1.setResponseMessage("otp mismatch!");
+                requestDAO1.setStatusCode(400);
+            }
+            User unactivatedUser = userRepository.findByEmail(requestDAO.getEmail()).orElseThrow();
+            unactivatedUser.setActivated(true);
+            userRepository.save(unactivatedUser);
+            loginOtp.setVerified(true);
+
+            loginOtpRepository.save(loginOtp);
+
+            requestDAO1.setResponseMessage("Account activated");
+            requestDAO1.setStatusCode(200);
+
+            return new ResponseEntity<>(requestDAO1, HttpStatus.OK);
+        }catch (NoSuchElementException e){
+
+            requestDAO1.setStatusCode(404);
+            requestDAO1.setResponseMessage("Otp not found. Check and try again");
+
+            return new ResponseEntity<>(requestDAO1, HttpStatus.INTERNAL_SERVER_ERROR);
+        }catch (Exception e){
+
+            requestDAO1.setStatusCode(500);
+            requestDAO1.setResponseMessage("An error has occurred");
+
+            return new ResponseEntity<>(requestDAO1, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @Override
     public ResponseEntity<RequestDAO> userLogin(RequestDAO requestDAO) {
         RequestDAO requestDAO1 = new RequestDAO();
-        System.out.println("we are here");
-        System.out.println(requestDAO.getEmail());
-        System.out.println(requestDAO.getPassword());
+        try {
+            if(!userRepository.existsByEmail(requestDAO.getEmail())){
 
-//        try {
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(requestDAO.getEmail(),requestDAO.getPassword()));
-        System.out.println("we are here");
-        User user = userRepository.findByEmail(requestDAO.getEmail()).orElseThrow();
-        String token = jwtService.generateToken(user);
-               
+                requestDAO1.setResponseMessage("Account does not exist!");
+                requestDAO1.setStatusCode(404);
 
-       requestDAO1.setToken(token);
-       requestDAO1.setStatusCode(200);
-       requestDAO1.setResponseMessage("Login successful");
+                return new ResponseEntity<>(requestDAO1, HttpStatus.NOT_FOUND);
+            }
+            User user = userRepository.findByEmail(requestDAO.getEmail()).orElseThrow();
+            if(!user.isEnabled()){
+                requestDAO1.setResponseMessage("Account not activated");
+                requestDAO1.setStatusCode(400);
 
-       return new ResponseEntity<>(requestDAO1, HttpStatus.OK);
+                return new ResponseEntity<>(requestDAO1, HttpStatus.BAD_REQUEST);
+            }
 
 
-//        }catch (Exception e){
-//
-//            requestDAO1.setStatusCode(400);
-//            requestDAO1.setResponseMessage("Login not successful");
-//            return new ResponseEntity<>(requestDAO1, HttpStatus.BAD_REQUEST);
-//        }
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(requestDAO.getEmail(),requestDAO.getPassword()));
+            String token = jwtService.generateToken(user);
+
+           requestDAO1.setToken(token);
+           requestDAO1.setStatusCode(200);
+           requestDAO1.setResponseMessage("Login successful");
+
+           return new ResponseEntity<>(requestDAO1, HttpStatus.OK);
+
+        }catch (Exception e){
+
+            requestDAO1.setStatusCode(400);
+            requestDAO1.setResponseMessage("Login not successful");
+            return new ResponseEntity<>(requestDAO1, HttpStatus.BAD_REQUEST);
+        }
 
     }
 
@@ -174,4 +257,17 @@ public class UserServiceImpl implements UserService {
             return new ResponseEntity<>("An error has occurred", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @Override
+    public ResponseEntity<String> logout(RequestDAO requestDAO) {
+
+        try{
+            //todo add the authentication logout logic
+
+            return ResponseEntity.ok("Successfully logged out");
+        } catch (Exception e){
+            throw e;
+        }
+    }
+
 }

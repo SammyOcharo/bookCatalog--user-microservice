@@ -23,16 +23,22 @@ public class UserController {
         return userService.userRegister(requestDAO);
     }
 
-    @PostMapping("user-forget-password/")
-    public ResponseEntity<String> forgetPassword(@RequestBody RequestDAO requestDAO){
-        return userService.forgetPassword(requestDAO);
+    @PostMapping("activate-account/")
+    public ResponseEntity<RequestDAO> activateAccount(@RequestBody RequestDAO requestDAO){
+
+        return userService.activateAccount(requestDAO);
     }
+
 
     @PostMapping("user-login/")
     public ResponseEntity<RequestDAO> userLogin(@RequestBody RequestDAO requestDAO){
         return userService.userLogin(requestDAO);
     }
 
+    @PostMapping("user-forget-password/")
+    public ResponseEntity<String> forgetPassword(@RequestBody RequestDAO requestDAO){
+        return userService.forgetPassword(requestDAO);
+    }
     @PostMapping("user-forget-password/confirm-otp/")
     public ResponseEntity<String> confirmOtp(@RequestBody RequestDAO requestDAO){
 
@@ -43,6 +49,12 @@ public class UserController {
     public ResponseEntity<String> changePassword(@RequestBody RequestDAO requestDAO){
 
         return userService.changePassword(requestDAO);
+    }
+
+    @PostMapping("logout/")
+    public ResponseEntity<String> logout(@RequestBody RequestDAO requestDAO){
+
+        return userService.logout(requestDAO);
     }
 
 }
